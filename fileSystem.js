@@ -1,7 +1,7 @@
 /**
  * Created by Boaz on 24/01/2017.
  */
-
+//comment
 const readlineSync = require('readline-sync');
 const colors = require('colors');
 var exit = false;//global variable to control the exit command
