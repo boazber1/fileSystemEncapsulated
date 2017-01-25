@@ -107,7 +107,7 @@ function printMenu(){
 function printRootSorted(){
 
     console.log(colors.green(path));
-    var folder = currentFolder(root, 1);
+    var folder = currentFolder(root, 0);
     //console.log(folder);
     var foldersrArray = [];
     var filesArray = [];
