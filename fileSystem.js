@@ -5,7 +5,7 @@
 const readlineSync = require('readline-sync');
 const colors = require('colors');
 var exit = false;//global variable to control the exit command
-//var uniqueID = 0;// an ID of each file in the storage
+var uniqueID = 0;// will hold the id of the current folder
 var path = 'root >';
 var level = 0;// level distance from root folder
 
@@ -74,9 +74,6 @@ while(!exit){
 
  */
 
-
-
-
 function printMenu(){
     var userMenuInput = readlineSync.keyInSelect(menu, 'Chose your menu option(1 to 6):');
     userMenuInput++;
@@ -109,19 +106,45 @@ function printMenu(){
 /**** User functions ****/
 function printRootSorted(){
 
-
-    console.log(path);
-    var folder = currentFolder(root, 3);
-    console.log(folder);
+    console.log(colors.green(path));
+    var folder = currentFolder(root, 1);
+    //console.log(folder);
     var foldersrArray = [];
     var filesArray = [];
-    for (var i = 0 ; i < storage.length; i++){
+    if(folder.type === 'directory') {
+        for (var i = 0; i < folder.subFiles.length; i++) {
+            if (folder.subFiles[i].type === 'file') {
+                filesArray.push(folder.subFiles[i].name);
+            } else {
+                foldersrArray.push(folder.subFiles[i].name);
+            }
 
+            foldersrArray.sort();
+            filesArray.sort();
+        }
+    } else {
+        filesArray.push(folder.subFiles[i].name);
     }
+    for(var j = 0; j < foldersrArray.length; j++){
+        console.log(colors.blue("  " + foldersrArray[j]));
+    }
+
+    for(var k = 0; k < filesArray.length; k++){
+        console.log(colors.yellow("    " + filesArray[k]));
+    }
+
 
 }
 
 function changeDirectory(){
+    var whereToGo = readlineSync.question(colors.magenta("For going backwards type '..'\nFor going forward type 'cd [folder name]"));
+    if(whereToGo !== '..') {
+        if (!isFatherOf(uniqueID, whereToGo)) {
+            console.log(colors.bgRed("Error ") +"no directory called" +whereToGo + " under current folder")
+        } else {
+
+        }
+    }
 
 }
 
@@ -144,21 +167,17 @@ function exitProgram() {// exit the program safely using the process object
         process.exit();
     } else if(exitProgram.toLowerCase() === 'n' ){
         printMenu();
-    } else {
-        console.log("Your answer should contain y or n");
-        printMenu();
     }
 }
 
 /*** intermediate functions ***/
-
-function currentFolder (currentFile, id){//given current file
-    console.log(currentFile.name + "\t" +currentFile.id);
+//given current file and id will return recursively the current folder
+function currentFolder (currentFile, id){
+    //console.log(currentFile.name + "\t" +currentFile.id);
     var res = undefined;
      if(currentFile.id === id){
          return currentFile; //recursion termination
      } else {
-         console.log("not equal");
          if(currentFile.type === 'directory') {
              for (var i = 0; i < currentFile.subFiles.length; i++) {
                  if (currentFile.subFiles[i].id === id) {
@@ -172,4 +191,28 @@ function currentFolder (currentFile, id){//given current file
              }
          }
      }
+}
+
+function currentFile(currentFile ,id){
+    var res = undefined;
+    if(currentFile.id === id){
+        return currentFile; //recursion termination
+    } else {
+
+            for (var i = 0; i < currentFile.subFiles.length; i++) {
+                if (currentFile.subFiles[i].id === id) {
+                    return currentFile.subFiles[i];
+                } else {
+                    res =  currentFile(currentFile.subFiles[i], id);
+                    if(res !== undefined){
+                        return res;
+                    }
+                }
+            }
+
+    }
+}
+
+function isFatherOf(id, name){
+
 }
