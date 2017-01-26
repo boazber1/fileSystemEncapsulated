@@ -8,6 +8,8 @@ var exit = false;//global variable to control the exit command
 var uniqueID = 0;// will hold the id of the current folder
 var path = 'root >';
 var level = 0;// level distance from root folder
+var a = console.log;
+
 
 var menu = [//user menu
     ' Print current folder.',
@@ -62,7 +64,9 @@ var storage = [
     }
 ];
 var root = storage[0];// will hold our array of files from the root point
+
 console.log(colors.green(path) );
+
 
 
 while(!exit){
@@ -75,6 +79,7 @@ while(!exit){
  */
 
 function printMenu(){
+    myFather(0);
     var userMenuInput = readlineSync.keyInSelect(menu, 'Chose your menu option(1 to 6):');
     userMenuInput++;
     switch (userMenuInput){//calling functions according to user menu input
@@ -138,11 +143,11 @@ function printRootSorted(){
 
 function changeDirectory(){
     var whereToGo = readlineSync.question(colors.magenta("For going backwards type '..'\nFor going forward type 'cd [folder name]"));
-    if(whereToGo !== '..') {
-        if (!isFatherOf(uniqueID, whereToGo)) {
+    if(whereToGo == '..') {
+        if (myFather(uniqueID, whereToGo)) {
             console.log(colors.bgRed("Error ") +"no directory called" +whereToGo + " under current folder")
-        } else {
-
+        } else  {
+            path += "/" + whereToGo;
         }
     }
 
@@ -213,6 +218,23 @@ function currentFile(currentFile ,id){
     }
 }
 
-function isFatherOf(id, name){
+
+function myFather(currId , whereAmI){
+    var fileName = '\\';
+    if (currId === 0){
+        console.log("You are in the root, no where to go back");
+    }
+    if(whereAmI.subFiles.type === 'directory') {
+        for (var i = 0; i < whereAmI.subFiles.length; i++) {
+            if (whereAmI.subFiles[i].id === currId) {
+                uniqueID = whereAmI[i].id;
+                fileName += whereAmI[i].name;
+                path = path.substr(path.length - fileName.length);
+                return whereAmI;
+            } else {
+                return myFather(currId, whereAmI.subFiles[i]);
+            }
+        }
+    }
 
 }
