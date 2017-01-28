@@ -293,7 +293,7 @@ function myFather(currentLocation, currId) {
         }
     }
 }
-
+//
 
 function folderIsExist(folder , folderInFolder) {
 
