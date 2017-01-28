@@ -144,7 +144,7 @@ function printRootSorted(){
     }
 
 }
-
+//
 function changeDirectory(){
     var toGo = readlineSync.question(colors.magenta("To move forward type [folder name], to move backward type [..] "));
     var folder;
