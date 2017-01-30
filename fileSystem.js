@@ -3,6 +3,8 @@
  */
 const readlineSync = require('readline-sync');
 const colors = require('colors');
+const fs = require('fs');
+
 var exit = false;//global variable to control the exit command
 var uniqueID = 0;// will hold the id of the current folder
 var path = 'root';
@@ -15,12 +17,20 @@ var menu = [//user menu
     ' Create file or folder',
     ' Open file',
     ' Delete file',
+    ' Export storage to file',
+    ' Import storage from file',
     ' Exit(suit yourself out from the program)'
 ];
+
+/*file structure  : {id : 'unique id', parent: parent_id , name :'fileName', type: ' directory or file',
+ subFiles(if needed): [], content(in txt files) : }
+ */
+
 
 var storage = [
     {
         id: 0,
+        parent: 0,
         name: 'root',
         type: 'directory',
         subFiles:[
@@ -32,12 +42,14 @@ var storage = [
                 subFiles: [
                     {
                         id: 4,
+                        parent: 1,
                         name: 'file.txt1',
                         type: 'file',
                         content: 'i\'m file.txt1'
                     },
                     {
                         id: 5,
+                        parent: 1,
                         name: 'sub7',
                         type: 'directory',
                         subFiles: []
@@ -49,6 +61,7 @@ var storage = [
             },
             {
                 id: 2,
+                parent: 0,
                 name: 'sub2',
                 type: 'directory',
                 subFiles :[
@@ -59,6 +72,7 @@ var storage = [
 
             {
                 id: 3,
+                parent: 0,
                 name: 'file1.txt',
                 type :'file',
                 content: 'i\'m file.txt1...'
@@ -77,12 +91,6 @@ while(!exit){
     console.log("\n" +colors.red("MENU :") );
     printMenu();
 }
-
-/*file structure  : {id : 'unique id' , name :'fileName', type: ' directory or file',
- subFiles(if needed): [], content(in txt files) : }
- */
-
-
 
 
 function printMenu(){
@@ -107,6 +115,12 @@ function printMenu(){
             deleteFile();
             break;
         case 6 :
+            exportFileSystemToFile();
+            break;
+        case 7:
+            importFileSystemFromFile();
+            break;
+        case 8:
             exitProgram();
             break;
 
@@ -187,8 +201,8 @@ function createNewFile() {
          } else if(fileIsExist(folder, name)){
              console.log(colors.red("ERROR: " + name +" is already exist under " + folder.name + " folder"));
          } else {
-             content = readlineSync.question(colors.magenta("To add content to file type it now, to live it empty type the Enter button: "));
-             folder.subFiles.push({id: trackUniqueId , name: name, type: 'file', content: content});
+             content = readlineSync.question(colors.magenta("To add content to the file type it now, to live it empty type the Enter button: "));
+             folder.subFiles.push({id: trackUniqueId ,parent: folder.id, name: name, type: 'file', content: content});
              trackUniqueId ++;
              console.log(colors.magenta(name + " was created"));
          }
@@ -199,7 +213,7 @@ function createNewFile() {
         } else if (fileIsExist(folder, name)){
             console.log(colors.red("ERROR: " + name +" is already exist under " + folder.name + " folder"));
         } else {
-            folder.subFiles.push({id: trackUniqueId , name: name, type: 'directory', subFiles: []});
+            folder.subFiles.push({id: trackUniqueId , parent: folder.id, name: name, type: 'directory', subFiles: []});
             trackUniqueId ++;
             console.log(colors.magenta(name + " was created"));
         }
@@ -239,6 +253,30 @@ function deleteFile(){
             console.log(colors.magenta("No file called " + fileToDelete + " under " + folder.name));
         }
     }
+}
+
+function exportFileSystemToFile(){
+    var arr = [];
+    treeToLinearArray(root, arr);
+    bubbleSort(arr);
+    console.log(arr);
+    linearArrayToFile('externalArrayFile.txt',arr);
+
+}
+
+function importFileSystemFromFile(){
+    root = [
+        {
+        id: 0,
+        parent: 0,
+        name: 'root',
+        type: 'directory',
+        subFiles: []
+        }
+        ]
+     var arr = getLinearArrayFromFile('externalArrayFile.txt');
+     var parent = currentFolder(root, 0);
+
 }
 
 function exitProgram() {// exit the program safely using the process object
@@ -293,7 +331,7 @@ function myFather(currentLocation, currId) {
         }
     }
 }
-//
+
 
 function folderIsExist(folder , folderInFolder) {
 
@@ -317,5 +355,54 @@ function fileIsExist(folder , fileInFolder) {
     return false;
 }
 
+function treeToLinearArray(currentFolder, arr){
+    arr.push(currentFolder);
+    if (currentFolder.type === 'directory') {
+        for (var i = 0; i < currentFolder.subFiles.length; i++) {
+            treeToLinearArray(currentFolder.subFiles[i], arr);
+        }
+    }
+}
+
+function linearArrayToTree(){
+
+}
+
+function bubbleSort(arr) {
+    var swapped;
+    do {
+        swapped = false;
+        for (var i=0; i < arr.length-1; i++) {
+            if (arr[i].id > arr[i+1].id) {
+                var temp = arr[i];
+                arr[i] = arr[i+1];
+                arr[i+1] = temp;
+                swapped = true;
+            }
+        }
+    } while (swapped);
+}
 
 
+
+function linearArrayToFile(fileNameWriteTo, linearArray){
+    const fs = require('fs');
+    fs.writeFileSync(__dirname +"/"+ fileNameWriteTo, JSON.stringify(linearArray));
+}
+
+
+function getLinearArrayFromFile(fileNameReadFrom){
+    const fs = require('fs');
+    try{
+        var linearArray = fs.readFileSync(__dirname +"/"+ fileNameReadFrom).toString();
+        if (linearArray !== ''){
+            linearArray = JSON.parse(linearArray);
+        } else {
+            console.log("\'"+fileNameReadFrom+"\' is empty");
+        }
+    } catch (e){
+        linearArray = 0;
+    }
+
+    return linearArray;
+}
